@@ -81,7 +81,7 @@ static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-void zapfStandLed(void);
+void zapfStandLed(uint16_t anzeigeMillis);
 void dimLed(unsigned int, unsigned int);
 void ledDelay(void);
 void warpLed(uint16_t wieOftAusfuehren);
@@ -181,19 +181,26 @@ int main(void) {
 		if (oldMillis != zapfMillis) {
 			//HAL_GPIO_TogglePin(userLed_GPIO_Port, userLed_Pin);
 			oldMillis = zapfMillis;
-			zapfStandLed();
-			sprintf(buffer, "zapf: %d ml aTx0: %x aTx1: %x  \n\r", zapfMillis,
-					aTxBuffer[0], aTxBuffer[1]);
-			CDC_Transmit_FS(buffer, sizeof(buffer));
-
-			if (zapfMillis >= userMillis) {
-				zapfMillis = 0;
-				for (unsigned int x = 65535; x > 128; x -= 127) {
-					dimLed(0, x);
-					HAL_Delay(1);
-				}
-				dimLed(0, 0);
+			if (zapfMillis < userMillis) {
+				zapfStandLed(zapfMillis);
 			}
+			else {
+				zapfStandLed(userMillis);
+			}
+
+//			sprintf(buffer, "zapf: %d ml aTx0: %x aTx1: %x  \n\r", zapfMillis,
+//					aTxBuffer[0], aTxBuffer[1]);
+//			CDC_Transmit_FS(buffer, sizeof(buffer));
+
+//			if (zapfMillis >= userMillis) {
+//				zapfMillis = 0;
+//				for (unsigned int x = 65535; x > 128; x -= 127) {
+//					dimLed(0, x);
+//					HAL_Delay(1);
+//				}
+//				dimLed(0, 0);
+//			}
+
 		}
 
 
@@ -596,8 +603,9 @@ void checkAfterMaster(void) {
 }
 
 /* Zeigt den aktuellen  Zapfstand an */
-void zapfStandLed(void) {
-	unsigned long countsAktuell = countProMl * zapfMillis;
+void zapfStandLed(uint16_t anzeigeMillis) {
+	unsigned long countsAktuell = countProMl * anzeigeMillis;
+
 
 	if (countsAktuell < 1 * 0xFFFF) {
 		dimLed(1, countsAktuell);
