@@ -54,7 +54,7 @@
 #define makeFunWithLeds2      	0x23      //zapfMillis
 #define makeFunWithLeds3      	0x24      //zapfMillis
 #define makeFunWithLeds4      	0x25      //zapfMillis		byte1: Leds byte2: helligkeit
-
+#define DIM_LED_TO_WERT		    0x26	  //zapfMillis		byte1: 0 damit ledfun1 aufhört, byte 2: helligkeit
 /*
  *  Definitionen für Bytes
  *  TEMPERATURREGLER						ALLES 2 Bytes -> 1 uint16_t

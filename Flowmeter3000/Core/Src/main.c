@@ -68,6 +68,7 @@ uint8_t energieSparen = 0;
 uint8_t ebnerModus = 0;
 uint8_t ledDelayVar = 10;
 uint8_t recieveComplete = 0;
+unsigned int helligkeit = 0;
 
 /* USER CODE END PV */
 
@@ -88,6 +89,7 @@ void warpLed(uint16_t wieOftAusfuehren);
 void warpLed2(uint32_t laufZeit);
 void warpLed3(uint32_t laufZeit);
 void gauselMann(void);
+void dimLedToWert(void);
 void checkAfterMaster(void);
 uint16_t getFromRxBuffer(void);
 
@@ -579,7 +581,7 @@ void checkAfterMaster(void) {
 	case beginZapf:
 		zapfMillis = 0;
 		interruptCounter = 0;
-		dimLed(0, 0);
+		dimLed(0, helligkeit);
 		countProMl = 524287 / userMillis;
 		aTxBuffer[1] = zapfMillis & 0xFF;   // Lowbyte (die hinteren 8 Bit)
 		aTxBuffer[0] = zapfMillis >> 8;	// Highbyte (die vorderen acht Bit)
@@ -596,6 +598,9 @@ void checkAfterMaster(void) {
 		break;
 	case makeFunWithLeds4:
 		gauselMann();
+		break;
+	case DIM_LED_TO_WERT:
+		dimLedToWert();
 		break;
 	case endZapf:
 		zapfMillis = 0;
@@ -756,13 +761,6 @@ void warpLed(uint16_t wieOftAusfuehren) {
 		ledDelay();
 	}
 
-	//hier die LEDS dimmen wenn feddich
-	aRxBuffer[2] = 100; //shorter!
-	for (uint16_t x = 0xFFFF; x > 0xFF ; x -= 0xFF) {
-		dimLed(0, x); //0= alle LEDS, x der Zustand
-		ledDelay();
-	}
-	dimLed(0,0);
 
 	/* Alle Leds runterdimmen */
 
@@ -774,6 +772,20 @@ void warpLed(uint16_t wieOftAusfuehren) {
 		}
 	}
 	*/
+
+}
+
+void dimLedToWert() {
+	//hier die LEDS dimmen wenn feddich
+	unsigned int anfangHelligkeit = (aRxBuffer[1] << 8 | 0xFF);
+	helligkeit = (aRxBuffer[2] << 8 | 0x00);
+
+	aRxBuffer[2] = 100; //shorter! das ist fürs delay dann
+	for (uint16_t x = anfangHelligkeit; x > helligkeit ; x -= 0xFF) {
+		dimLed(0, x); //0= alle LEDS, x der Zustand
+		ledDelay();
+	}
+	dimLed(0,helligkeit);
 
 }
 
