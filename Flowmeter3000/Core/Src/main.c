@@ -777,13 +777,17 @@ void warpLed(uint16_t wieOftAusfuehren) {
 
 void dimLedToWert() {
 	//hier die LEDS dimmen wenn feddich
-	unsigned int anfangHelligkeit = (aRxBuffer[1] << 8 | 0xFF);
-	helligkeit = (aRxBuffer[2] << 8 | 0x00);
-
+	uint8_t anfang = aRxBuffer[1];
+	uint8_t ende = aRxBuffer[2];
 	aRxBuffer[2] = 100; //shorter! das ist fürs delay dann
-	for (uint16_t x = anfangHelligkeit; x > helligkeit ; x -= 0xFF) {
-		dimLed(0, x); //0= alle LEDS, x der Zustand
+	for (uint8_t x = anfang; x > ende ; x --) {
+		dimLed(0, (x << 8| 0xFF)); //0= alle LEDS, x der Zustand
 		ledDelay();
+	}
+	if (ende > 0) {
+		helligkeit = ende << 8 | 0x00;
+	} else {
+		helligkeit = 0;
 	}
 	dimLed(0,helligkeit);
 
